@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Карта-схема объектов СВП (Прототип)</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">Карта-схема объектов СВП (Прототип)</div>
+      <nav class="controls">
+        <div class="control-group">
+          <label for="searchInput">Поиск объекта</label>
+          <input id="searchInput" list="systemsDatalist" placeholder="Начните вводить" />
+          <datalist id="systemsDatalist"></datalist>
+          <button id="searchBtn" class="btn">Найти</button>
+        </div>
+        <div class="control-group route-group">
+          <label>Маршрут</label>
+          <input id="fromInput" list="systemsDatalist" placeholder="Откуда" />
+          <input id="toInput" list="systemsDatalist" placeholder="Куда" />
+          <button id="routeBtn" class="btn primary">Построить</button>
+          <span id="routeInfo" class="muted"></span>
+        </div>
+        <div class="control-group">
+          <label class="muted"><input id="dragToggle" type="checkbox" /> Включить перемещение</label>
+        </div>
+        
+        <div class="control-group edit-group">
+          <button id="addNodeBtn" class="btn">+ Узел</button>
+          <button id="addEdgeBtn" class="btn">+ Линия</button>
+          <button id="deleteBtn" class="btn danger">Удалить</button>
+        </div>
+        
+        <div class="control-group export-group">
+          <button id="exportBtn" class="btn">📤 Экспорт</button>
+          <button id="importBtn" class="btn">📥 Импорт</button>
+          <button id="statsBtn" class="btn">📊 Статистика</button>
+          <button id="undoBtn" class="btn">↶ Отмена</button>
+          <button id="redoBtn" class="btn">↷ Повтор</button>
+          <button id="selectAllBtn" class="btn">☑ Все</button>
+          <button id="deselectAllBtn" class="btn">☐ Снять выбор</button>
+          <button id="deleteSelectedBtn" class="btn">🗑 Удалить выбранные</button>
+          <button id="saveMapBtn" class="btn">💾 Сохранить</button>
+        </div>
+        
+        <div class="control-group zoom-group">
+          <button id="zoomInBtn" class="btn">+</button>
+          <button id="zoomOutBtn" class="btn">−</button>
+          <button id="resetViewBtn" class="btn">Сброс</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <div class="map-container">
+        <svg id="map" tabindex="0" role="img" aria-label="Карта региона The Forge">
+          <defs>
+            <pattern id="gridPattern" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#dfe6ef" stroke-width="0.5" />
+            </pattern>
+            <pattern id="gridPatternMinor" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#eff3f8" stroke-width="0.25" />
+            </pattern>
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.25" />
+            </filter>
+          </defs>
+          <g id="viewport">
+            <rect id="bgMinor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternMinor)" />
+            <rect id="bgMajor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPattern)" />
+            <g id="edgesLayer"></g>
+            <g id="nodesLayer"></g>
+            <g id="labelsLayer"></g>
+          </g>
+        </svg>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <div>
+        <strong>Карта в разработке</strong>
+      </div>
+      <div class="legend">
+        <button class="legend-item" data-road="ckad"><span class="chip road-ckad"></span> ЦКАД</button>
+        <button class="legend-item" data-road="m12"><span class="chip road-m12"></span> М-12 "Восток"</button>
+        <button class="legend-item" data-road="a289"><span class="chip road-a289"></span> А-289</button>
+        <button class="legend-item" data-road="m1"><span class="chip road-m1"></span> М-1 "Беларусь"</button>
+        <button class="legend-item" data-road="m3"><span class="chip road-m3"></span> М-3 "Украина"</button>
+        <button class="legend-item" data-road="m4"><span class="chip road-m4"></span> М-4 "Дон"</button>
+        <button class="legend-item" data-road="m11"><span class="chip road-m11"></span> М-11 "Нева"</button>
+      </div>
+    </footer>
+
+         <!-- Панель создания узла -->
+     <div id="nodeCreationPanel" class="node-creation-panel" style="display: none;">
+       <h3>Создать новый узел</h3>
+       <div class="form-group">
+         <label for="newNodeId">ID узла:</label>
+         <input type="text" id="newNodeId" placeholder="Например: 999">
+       </div>
+       <div class="form-group">
+         <label for="newNodeName">Название:</label>
+         <input type="text" id="newNodeName" placeholder="Описание узла">
+       </div>
+       <div class="form-group">
+         <label for="newNodeType">Тип дороги:</label>
+         <select id="newNodeType">
+           <option value="road-ckad">ЦКАД</option>
+           <option value="road-m12">М-12 "Восток"</option>
+           <option value="road-a289">А-289</option>
+           <option value="road-m1">М-1 "Беларусь"</option>
+           <option value="road-m3">М-3 "Украина"</option>
+           <option value="road-m4">М-4 "Дон"</option>
+           <option value="road-m11">М-11 "Нева"</option>
+         </select>
+       </div>
+       <div class="form-group">
+         <label for="newNodeCornerTag">Угловой тег:</label>
+         <input type="text" id="newNodeCornerTag" placeholder="Например: ПК-1">
+       </div>
+       <div class="form-group">
+         <label for="newNodeKm">Километр:</label>
+         <input type="text" id="newNodeKm" placeholder="Например: 150">
+       </div>
+       <div class="form-actions">
+         <button id="createNodeBtn" class="btn primary">Создать</button>
+         <button id="cancelNodeBtn" class="btn">Отмена</button>
+       </div>
+     </div>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>
+
+

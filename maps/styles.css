@@ -1,0 +1,373 @@
+/* Reset */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: #1f2d3d; }
+
+:root {
+  --bg: #f7f9fc;
+  --panel: #ffffff;
+  --border: #d6deeb;
+  --muted: #6b7c93;
+  --accent: #3366ff;
+  --accent-600: #2851cc;
+  --danger: #e8590c;
+}
+
+.app-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+}
+
+.brand { font-weight: 700; letter-spacing: 0.2px; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.control-group { display: flex; align-items: center; gap: 8px; }
+/* Выравнивание текста внутри чекбокса */
+.controls label.muted { display: inline-flex; align-items: center; gap: 6px; }
+.route-group input { width: 140px; }
+.export-group .btn { font-size: 12px; }
+.zoom-group .btn { height: 32px; }
+#zoomInBtn, #zoomOutBtn { width: 36px; padding: 0; }
+
+label { font-size: 12px; color: var(--muted); }
+input { height: 32px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; outline: none; }
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(51,102,255,0.1); }
+
+.btn { height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent-600); border-color: var(--accent-600); }
+
+.btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn.danger:hover { background: #d1450a; border-color: #d1450a; }
+
+.app-main { height: calc(100% - 140px); background: var(--bg); }
+.map-container { height: 100%; width: 100%; }
+#map { width: 100%; height: 100%; background: #fbfdff; outline: none; }
+
+.app-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--border); background: var(--panel); }
+.muted { color: var(--muted); font-size: 12px; }
+
+.legend { display: flex; align-items: center; gap: 12px; }
+.legend .legend-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--border); background: #fff; border-radius: 8px; cursor: pointer; font-size: 12px; }
+.legend .legend-item:hover { border-color: var(--accent); color: var(--accent); }
+.chip { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.chip.road-ckad { background: #dbeafe; border: 1px solid #3b82f6; }
+.chip.road-m12 { background: #ffedd5; border: 1px solid #f97316; }
+.chip.road-a289 { background: #dcfce7; border: 1px solid #22c55e; }
+.chip.road-m1  { background: #f3e8ff; border: 1px solid #a855f7; }
+.chip.road-m3  { background: #fef9c3; border: 1px solid #eab308; }
+.chip.road-m4  { background: #ffe4e6; border: 1px solid #f43f5e; }
+.chip.road-m11 { background: #cffafe; border: 1px solid #06b6d4; }
+
+/* Map styles */
+.edge { stroke: #98a6bc; stroke-opacity: 0.8; stroke-width: 1.5; }
+.edge.route { stroke: #ff6b6b; stroke-width: 2.5; stroke-opacity: 1; }
+.edge.free { stroke: #ef4444; stroke-opacity: 0.95; stroke-dasharray: 6 4; stroke-linecap: round; }
+.node rect { stroke: #334155; stroke-width: 1; filter: url(#shadow); rx: 4; ry: 4; }
+.node circle { stroke: #334155; stroke-width: 1; filter: url(#shadow); }
+.node.road-ckad rect, .node.road-ckad circle { fill: #dbeafe; }
+.node.road-m12 rect, .node.road-m12 circle { fill: #ffedd5; }
+.node.road-a289 rect, .node.road-a289 circle { fill: #dcfce7; }
+.node.road-m1  rect, .node.road-m1  circle { fill: #f3e8ff; }
+.node.road-m3  rect, .node.road-m3  circle { fill: #fef9c3; }
+.node.road-m4  rect, .node.road-m4  circle { fill: #ffe4e6; }
+.node.road-m11 rect, .node.road-m11 circle { fill: #cffafe; }
+
+/* ТР (транспортные развязки) всегда белые внутри */
+.node.tr circle { fill: #ffffff !important; }
+.node.selected rect { stroke: var(--accent); stroke-width: 2; }
+.label { font: 10px/1.2 ui-sans-serif, system-ui, -apple-system, "Segoe UI"; fill: #1f2937; user-select: none; pointer-events: none; }
+.label.bg { fill: #fff; stroke: #cbd5e1; stroke-width: 0.5; }
+/* Малый уголовой текст в узле */
+.corner-label { font: 6px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI"; fill: #334155; pointer-events: none; font-weight: 600; }
+
+/* Tooltip */
+.tooltip { position: absolute; pointer-events: none; background: #fff; border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); font-size: 12px; color: #0f172a; }
+
+/* POI styles */
+.poi { cursor: pointer; }
+.poi circle { fill: #22c55e; stroke: #14532d; stroke-width: 1; }
+.poi.low { fill: #eab308; stroke: #713f12; }
+.poi.critical { fill: #ef4444; stroke: #7f1d1d; }
+.poi-label { font: 10px/1.1 ui-sans-serif, system-ui, -apple-system, "Segoe UI"; fill: #0f172a; pointer-events: none; }
+
+/* Overlay panel */
+.panel-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.35); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.panel-overlay[hidden] { display: none !important; }
+.panel { width: min(920px, 100%); background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: 90vh; }
+.panel-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel-title { font-weight: 600; }
+.panel-body { padding: 12px 16px; overflow: auto; }
+.panel-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+textarea#htmlInput { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+
+/* Выделение узлов - работает для всех типов (прямоугольники и круги) */
+.node.selected rect, .node.selected circle { stroke: var(--accent) !important; stroke-width: 2 !important; }
+/* Дополнительные правила для ТР узлов */
+.node.tr.selected circle { stroke: var(--accent) !important; stroke-width: 2 !important; }
+
+/* Режим редактирования */
+.edit-mode .node { cursor: pointer; }
+.edit-mode .node:hover { opacity: 0.8; }
+.edit-mode .edge { cursor: pointer; }
+.edit-mode .edge:hover { stroke-width: 3; }
+
+/* Создание узла */
+.node-creating { cursor: crosshair; }
+.node-creating .node { pointer-events: none; }
+
+/* Панель создания узла */
+.node-creation-panel {
+  position: fixed;
+  background: white;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 300px;
+  font-family: inherit;
+}
+
+.node-creation-panel h3 {
+  margin: 0 0 15px 0;
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions .btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* Временная линия */
+.temp-edge {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+  opacity: 0.7;
+}
+
+/* Создание линии */
+.edge-creating { cursor: crosshair; }
+.edge-creating .node { pointer-events: none; }
+.edge-creating .edge { pointer-events: none; }
+
+/* Временная линия при создании */
+.temp-edge { stroke: var(--accent); stroke-dasharray: 5 5; stroke-width: 2; pointer-events: none; }
+
+/* Дополнительные стили для панели */
+.btn-group { display: flex; gap: 8px; margin-top: 16px; }
+.btn-group .btn { flex: 1; padding: 10px; font-size: 14px; }
+
+/* Система сообщений */
+.message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  z-index: 10000;
+  max-width: 400px;
+  word-wrap: break-word;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slideIn 0.3s ease-out;
+}
+
+.message-success {
+  background: #10b981;
+}
+
+.message-error {
+  background: #ef4444;
+}
+
+.message-warning {
+  background: #f59e0b;
+}
+
+.message-info {
+  background: #3b82f6;
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideOut {
+  from { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  
+  .controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .control-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  
+  .route-group input {
+    width: 100%;
+  }
+  
+  .legend {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .legend .legend-item {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  .message {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+/* Улучшения для accessibility */
+.btn:focus,
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.node:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Темная тема (опционально) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --border: #334155;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --accent-600: #3b82f6;
+  }
+  
+  body {
+    color: #f1f5f9;
+  }
+  
+  #map {
+    background: #0f172a;
+  }
+  
+  .edge {
+    stroke: #64748b;
+  }
+  
+  .label {
+    fill: #e2e8f0;
+  }
+  
+  .corner-label {
+    fill: #cbd5e1;
+  }
+}
+
+/* Стили для выбранных узлов */
+.node.selected rect {
+  stroke: #3b82f6;
+  stroke-width: 3;
+  stroke-dasharray: 5,5;
+}
+
+.node.selected text {
+  font-weight: bold;
+  fill: #1e40af;
+}
+
+/* Стили для групповых операций */
+.group-operations {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.group-operations .btn {
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+/* Анимация выделения */
+@keyframes selectionPulse {
+  0% { stroke-width: 2; }
+  50% { stroke-width: 4; }
+  100% { stroke-width: 2; }
+}
+
+.node.selected rect {
+  animation: selectionPulse 2s infinite;
+}
+
+
