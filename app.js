@@ -55,43 +55,158 @@
     // Версия приложения
     VERSION: '2.1.0'
   };
-  const svg = document.getElementById('map');
-  const viewport = document.getElementById('viewport');
-  const edgesLayer = document.getElementById('edgesLayer');
-  const nodesLayer = document.getElementById('nodesLayer');
-  const labelsLayer = document.getElementById('labelsLayer');
-  
-  console.log('🔍 DOM ЭЛЕМЕНТЫ:');
-  console.log('🔍 svg =', svg);
-  console.log('🔍 viewport =', viewport);
-  console.log('🔍 edgesLayer =', edgesLayer);
-  console.log('🔍 nodesLayer =', nodesLayer);
-  console.log('🔍 labelsLayer =', labelsLayer);
 
-  const searchInput = document.getElementById('searchInput');
-  const systemsDatalist = document.getElementById('systemsDatalist');
-  const searchBtn = document.getElementById('searchBtn');
-  const fromInput = document.getElementById('fromInput');
-  const toInput = document.getElementById('toInput');
-  const routeBtn = document.getElementById('routeBtn');
-  const routeInfo = document.getElementById('routeInfo');
-  // Кнопки зума убраны - зум работает колесом мыши
-  const dragToggle = document.getElementById('dragToggle');
-  const legendButtons = document.querySelectorAll('.legend .legend-item');
+  // ========================================
+  // DOM ЭЛЕМЕНТЫ
+  // ========================================
+  const elements = {
+    // Основные элементы карты
+    svg: null,
+    viewport: null,
+    edgesLayer: null,
+    nodesLayer: null,
+    labelsLayer: null,
+    
+    // Элементы управления
+    searchInput: null,
+    searchBtn: null,
+    fromInput: null,
+    toInput: null,
+    routeBtn: null,
+    routeInfo: null,
+    dragToggle: null,
+    
+    // Кнопки редактирования
+    addNodeBtn: null,
+    addEdgeBtn: null,
+    deleteBtn: null,
+    
+    // Кнопки экспорта/импорта
+    exportBtn: null,
+    importBtn: null,
+    
+    // Панель создания узла
+    nodeCreationPanel: null,
+    createNodeBtn: null,
+    cancelNodeBtn: null,
+    newNodeId: null,
+    newNodeName: null,
+    newNodeType: null,
+    newNodeCornerTag: null,
+    newNodeKm: null,
+    
+    // Datalist для автодополнения
+    systemsDatalist: null
+  };
+
+  // Инициализация DOM элементов
+  elements.svg = document.getElementById('map');
+  elements.viewport = document.getElementById('viewport');
+  elements.edgesLayer = document.getElementById('edgesLayer');
+  elements.nodesLayer = document.getElementById('nodesLayer');
+  elements.labelsLayer = document.getElementById('labelsLayer');
+  
+  // Элементы управления
+  elements.searchInput = document.getElementById('searchInput');
+  elements.searchBtn = document.getElementById('searchBtn');
+  elements.fromInput = document.getElementById('fromInput');
+  elements.toInput = document.getElementById('toInput');
+  elements.routeBtn = document.getElementById('routeBtn');
+  elements.routeInfo = document.getElementById('routeInfo');
+  elements.dragToggle = document.getElementById('dragToggle');
   
   // Кнопки редактирования
-  const addNodeBtn = document.getElementById('addNodeBtn');
-  const addEdgeBtn = document.getElementById('addEdgeBtn');
-  const deleteBtn = document.getElementById('deleteBtn');
+  elements.addNodeBtn = document.getElementById('addNodeBtn');
+  elements.addEdgeBtn = document.getElementById('addEdgeBtn');
+  elements.deleteBtn = document.getElementById('deleteBtn');
   
   // Кнопки экспорта/импорта
-  const exportBtn = document.getElementById('exportBtn');
-  const importBtn = document.getElementById('importBtn');
+  elements.exportBtn = document.getElementById('exportBtn');
+  elements.importBtn = document.getElementById('importBtn');
   
   // Панель создания узла
-  const nodeCreationPanel = document.getElementById('nodeCreationPanel');
-  const createNodeBtn = document.getElementById('createNodeBtn');
-  const cancelNodeBtn = document.getElementById('cancelNodeBtn');
+  elements.nodeCreationPanel = document.getElementById('nodeCreationPanel');
+  elements.createNodeBtn = document.getElementById('createNodeBtn');
+  elements.cancelNodeBtn = document.getElementById('cancelNodeBtn');
+  elements.newNodeId = document.getElementById('newNodeId');
+  elements.newNodeName = document.getElementById('newNodeName');
+  elements.newNodeType = document.getElementById('newNodeType');
+  elements.newNodeCornerTag = document.getElementById('newNodeCornerTag');
+  elements.newNodeKm = document.getElementById('newNodeKm');
+  
+  // Datalist
+  elements.systemsDatalist = document.getElementById('systemsDatalist');
+
+  // ========================================
+  // ОБРАБОТКА ОШИБОК
+  // ========================================
+  
+  /**
+   * Общая функция обработки ошибок
+   * @param {Error} error - Объект ошибки
+   * @param {string} context - Контекст, в котором произошла ошибка
+   * @param {Object} additionalData - Дополнительные данные для отладки
+   */
+  function handleError(error, context = 'Неизвестный контекст', additionalData = {}) {
+    console.error(`❌ ОШИБКА в ${context}:`, error);
+    
+    if (Object.keys(additionalData).length > 0) {
+      console.error('📊 Дополнительные данные:', additionalData);
+    }
+    
+    // Показываем пользователю понятное сообщение
+    const userMessage = getUserFriendlyErrorMessage(error, context);
+    showErrorMessage(userMessage);
+    
+    // В продакшене можно отправить ошибку на сервер
+    // sendErrorToServer(error, context, additionalData);
+  }
+  
+  /**
+   * Преобразует техническую ошибку в понятное пользователю сообщение
+   * @param {Error} error - Объект ошибки
+   * @param {string} context - Контекст ошибки
+   * @returns {string} Понятное сообщение для пользователя
+   */
+  function getUserFriendlyErrorMessage(error, context) {
+    const errorMessages = {
+      'TypeError': 'Произошла ошибка при обработке данных',
+      'ReferenceError': 'Ошибка в коде приложения',
+      'SyntaxError': 'Ошибка в синтаксисе',
+      'NetworkError': 'Ошибка сети',
+      'ValidationError': 'Ошибка валидации данных'
+    };
+    
+    const baseMessage = errorMessages[error.name] || 'Произошла неожиданная ошибка';
+    
+    const contextMessages = {
+      'создание узла': 'при создании нового узла',
+      'удаление узла': 'при удалении узла',
+      'создание связи': 'при создании связи между узлами',
+      'удаление связи': 'при удалении связи',
+      'сохранение карты': 'при сохранении карты',
+      'загрузка карты': 'при загрузке карты',
+      'экспорт карты': 'при экспорте карты',
+      'импорт карты': 'при импорте карты',
+      'рендеринг': 'при отображении карты',
+      'поиск': 'при поиске узлов',
+      'построение маршрута': 'при построении маршрута'
+    };
+    
+    const contextMessage = contextMessages[context] || `в ${context}`;
+    
+    return `${baseMessage} ${contextMessage}. Попробуйте обновить страницу.`;
+  }
+  
+  console.log('🔍 DOM ЭЛЕМЕНТЫ:');
+  console.log('🔍 svg =', elements.svg);
+  console.log('🔍 viewport =', elements.viewport);
+  console.log('🔍 edgesLayer =', elements.edgesLayer);
+  console.log('🔍 nodesLayer =', elements.nodesLayer);
+  console.log('🔍 labelsLayer =', elements.labelsLayer);
+
+  // Используем элементы из объекта elements
+  const legendButtons = document.querySelectorAll('.legend .legend-item');
   
   // Dynamic tags for corner labels (must be defined before graph build)
   const dynamicCornerTags = {};
@@ -739,7 +854,7 @@
   let tempEdgeElement = null;
 
   function applyTransform() {
-    viewport.setAttribute('transform', `translate(${translate.x}, ${translate.y}) scale(${scale})`);
+    elements.viewport.setAttribute('transform', `translate(${translate.x}, ${translate.y}) scale(${scale})`);
   }
   applyTransform();
   // Привяжем клики по легенде
@@ -766,9 +881,50 @@
       });
     });
     
+    // Инициализация панорамирования и зума
+    initPanAndZoom();
+    
     // Инициализация режимов редактирования
     initEditModes();
   });
+  
+  // Инициализация панорамирования и зума
+  function initPanAndZoom() {
+    console.log('Инициализация панорамирования и зума...');
+    
+    // Панорамирование мышью
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+    
+    elements.svg.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isPanning = true;
+      panStart = { x: e.clientX - translate.x, y: e.clientY - translate.y };
+      elements.svg.style.cursor = 'grabbing';
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      translate.x = e.clientX - panStart.x;
+      translate.y = e.clientY - panStart.y;
+      applyTransform();
+    });
+    
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+      elements.svg.style.cursor = 'default';
+    });
+
+    // Зум колесом
+    elements.svg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const { clientX, clientY, deltaY } = e;
+      const zoomFactor = Math.pow(1.0015, -deltaY);
+      zoomAtPoint(clientX, clientY, zoomFactor);
+    }, { passive: false });
+    
+    console.log('✅ Панорамирование и зум инициализированы');
+  }
   
   // Инициализация режимов редактирования
   function initEditModes() {
@@ -776,64 +932,36 @@
     
     // Проверяем, что все элементы найдены
     console.log('Проверка элементов:', {
-      addNodeBtn: !!addNodeBtn,
-      addEdgeBtn: !!addEdgeBtn,
-      deleteBtn: !!deleteBtn,
-      nodeCreationPanel: !!nodeCreationPanel,
-      createNodeBtn: !!createNodeBtn,
-      cancelNodeBtn: !!cancelNodeBtn
+      addNodeBtn: !!elements.addNodeBtn,
+      addEdgeBtn: !!elements.addEdgeBtn,
+      deleteBtn: !!elements.deleteBtn,
+      nodeCreationPanel: !!elements.nodeCreationPanel,
+      createNodeBtn: !!elements.createNodeBtn,
+      cancelNodeBtn: !!elements.cancelNodeBtn
     });
     
     // Проверяем, что все элементы действительно существуют в DOM
-    if (!addNodeBtn) console.error('addNodeBtn не найден!');
-    if (!addEdgeBtn) console.error('addEdgeBtn не найден!');
-    if (!deleteBtn) console.error('deleteBtn не найден!');
-    if (!nodeCreationPanel) console.error('nodeCreationPanel не найден!');
-    if (!createNodeBtn) console.error('createNodeBtn не найден!');
-    if (!cancelNodeBtn) console.error('cancelNodeBtn не найден!');
+    if (!elements.addNodeBtn) console.error('addNodeBtn не найден!');
+    if (!elements.addEdgeBtn) console.error('addEdgeBtn не найден!');
+    if (!elements.deleteBtn) console.error('deleteBtn не найден!');
+    if (!elements.nodeCreationPanel) console.error('nodeCreationPanel не найден!');
+    if (!elements.createNodeBtn) console.error('createNodeBtn не найден!');
+    if (!elements.cancelNodeBtn) console.error('cancelNodeBtn не найден!');
     
     // Проверяем, что все элементы действительно существуют в DOM
     console.log('Проверка элементов в DOM:', {
-      addNodeBtn: document.getElementById('addNodeBtn'),
-      addEdgeBtn: document.getElementById('addEdgeBtn'),
-      deleteBtn: document.getElementById('deleteBtn'),
-      nodeCreationPanel: document.getElementById('nodeCreationPanel'),
-      createNodeBtn: document.getElementById('createNodeBtn'),
-      cancelNodeBtn: document.getElementById('cancelNodeBtn')
+      addNodeBtn: elements.addNodeBtn,
+      addEdgeBtn: elements.addEdgeBtn,
+      deleteBtn: elements.deleteBtn,
+      nodeCreationPanel: elements.nodeCreationPanel,
+      createNodeBtn: elements.createNodeBtn,
+      cancelNodeBtn: elements.cancelNodeBtn
     });
     
-    // Проверяем, что все элементы действительно существуют в DOM
-    console.log('Проверка элементов в DOM (повторно):', {
-      addNodeBtn: document.getElementById('addNodeBtn'),
-      addEdgeBtn: document.getElementById('addEdgeBtn'),
-      deleteBtn: document.getElementById('deleteBtn'),
-      nodeCreationPanel: document.getElementById('nodeCreationPanel'),
-      createNodeBtn: document.getElementById('createNodeBtn'),
-      cancelNodeBtn: document.getElementById('cancelNodeBtn')
-    });
     
-    // Проверяем, что все элементы действительно существуют в DOM
-    console.log('Проверка элементов в DOM (финально):', {
-      addNodeBtn: document.getElementById('addNodeBtn'),
-      addEdgeBtn: document.getElementById('addEdgeBtn'),
-      deleteBtn: document.getElementById('deleteBtn'),
-      nodeCreationPanel: document.getElementById('nodeCreationPanel'),
-      createNodeBtn: document.getElementById('createNodeBtn'),
-      cancelNodeBtn: document.getElementById('cancelNodeBtn')
-    });
-    
-    // Проверяем, что все элементы действительно существуют в DOM
-    console.log('Проверка элементов в DOM (окончательно):', {
-      addNodeBtn: document.getElementById('addNodeBtn'),
-      addEdgeBtn: document.getElementById('addEdgeBtn'),
-      deleteBtn: document.getElementById('deleteBtn'),
-      nodeCreationPanel: document.getElementById('nodeCreationPanel'),
-      createNodeBtn: document.getElementById('createNodeBtn'),
-      cancelNodeBtn: document.getElementById('cancelNodeBtn')
-    });
     
     // Кнопка добавления узла
-    addNodeBtn.addEventListener('click', () => {
+    elements.addNodeBtn.addEventListener('click', () => {
       console.log('Клик по кнопке добавления узла');
       if (nodeCreationMode) {
         exitNodeCreationMode();
@@ -844,7 +972,7 @@
     console.log('Обработчик addNodeBtn добавлен');
     
     // Кнопка добавления линии
-    addEdgeBtn.addEventListener('click', () => {
+    elements.addEdgeBtn.addEventListener('click', () => {
       console.log('🔘 КЛИК ПО КНОПКЕ "+ ЛИНИЯ"');
       console.log('Текущий edgeCreationMode:', edgeCreationMode);
       
@@ -859,31 +987,31 @@
     console.log('Обработчик addEdgeBtn добавлен');
     
     // Кнопка удаления
-    deleteBtn.addEventListener('click', deleteSelectedNode);
+    elements.deleteBtn.addEventListener('click', deleteSelectedNode);
     console.log('Обработчик deleteBtn добавлен');
     
     // Обработчики панели создания узла
-    createNodeBtn.addEventListener('click', createNewNode);
+    elements.createNodeBtn.addEventListener('click', createNewNode);
     console.log('Обработчик createNodeBtn добавлен');
-    cancelNodeBtn.addEventListener('click', exitNodeCreationMode);
+    elements.cancelNodeBtn.addEventListener('click', exitNodeCreationMode);
     console.log('Обработчик cancelNodeBtn добавлен');
     
     // Обработчик клика по карте для создания узлов
-    svg.addEventListener('click', handleMapClick);
+    elements.svg.addEventListener('click', handleMapClick);
     console.log('Обработчик клика по карте добавлен');
     
     // Обработчик движения мыши для временной линии
-    svg.addEventListener('mousemove', handleMapMouseMove);
+    elements.svg.addEventListener('mousemove', handleMapMouseMove);
     console.log('Обработчик движения мыши добавлен');
     
     // Обработчики для экспорта и импорта
-    if (exportBtn) {
-      exportBtn.addEventListener('click', exportMap);
+    if (elements.exportBtn) {
+      elements.exportBtn.addEventListener('click', exportMap);
       console.log('Обработчик экспорта добавлен');
     }
     
-    if (importBtn) {
-      importBtn.addEventListener('click', () => {
+    if (elements.importBtn) {
+      elements.importBtn.addEventListener('click', () => {
         if (!importInput) {
           importInput = createImportInput();
         }
@@ -903,31 +1031,31 @@
     if (edgeCreationMode) exitEdgeCreationMode();
     
     nodeCreationMode = true;
-    addNodeBtn.textContent = 'Отмена';
-    addNodeBtn.classList.add('primary');
-    svg.classList.add('node-creating');
-    svg.style.cursor = 'crosshair';
+    elements.addNodeBtn.textContent = 'Отмена';
+    elements.addNodeBtn.classList.add('primary');
+    elements.svg.classList.add('node-creating');
+    elements.svg.style.cursor = 'crosshair';
     
     // Проверяем состояние
     console.log('Режим создания узла активирован');
     console.log('nodeCreationMode =', nodeCreationMode);
-    console.log('addNodeBtn.textContent =', addNodeBtn.textContent);
-    console.log('svg.classList.contains("node-creating") =', svg.classList.contains('node-creating'));
-    console.log('svg.style.cursor =', svg.style.cursor);
+    console.log('addNodeBtn.textContent =', elements.addNodeBtn.textContent);
+    console.log('svg.classList.contains("node-creating") =', elements.svg.classList.contains('node-creating'));
+    console.log('svg.style.cursor =', elements.svg.style.cursor);
     
     // Проверяем, что обработчик клика работает
     console.log('Проверяем обработчик клика по карте...');
-    console.log('svg.onclick =', svg.onclick);
-    console.log('svg event listeners count =', svg.getEventListeners ? svg.getEventListeners('click')?.length : 'недоступно');
+    console.log('svg.onclick =', elements.svg.onclick);
+    console.log('svg event listeners count =', elements.svg.getEventListeners ? elements.svg.getEventListeners('click')?.length : 'недоступно');
   }
   
   // Выход из режима создания узла
   function exitNodeCreationMode() {
     nodeCreationMode = false;
-    addNodeBtn.textContent = '+ Узел';
-    addNodeBtn.classList.remove('primary');
-    svg.classList.remove('node-creating');
-    svg.style.cursor = 'default';
+    elements.addNodeBtn.textContent = '+ Узел';
+    elements.addNodeBtn.classList.remove('primary');
+    elements.svg.classList.remove('node-creating');
+    elements.svg.style.cursor = 'default';
     hideNodeCreationPanel();
   }
   
@@ -938,10 +1066,10 @@
     if (nodeCreationMode) exitNodeCreationMode();
     
     edgeCreationMode = true;
-    addEdgeBtn.textContent = 'Отмена';
-    addEdgeBtn.classList.add('primary');
-    svg.classList.add('edge-creating');
-    svg.style.cursor = 'crosshair';
+    elements.addEdgeBtn.textContent = 'Отмена';
+    elements.addEdgeBtn.classList.add('primary');
+    elements.svg.classList.add('edge-creating');
+    elements.svg.style.cursor = 'crosshair';
     
     console.log('✅ Режим создания линии активирован');
     console.log('📝 Кликните на первый узел для начала линии, затем на второй для завершения');
@@ -951,10 +1079,10 @@
   // Выход из режима создания линии
   function exitEdgeCreationMode() {
     edgeCreationMode = false;
-    addEdgeBtn.textContent = '+ Линия';
-    addEdgeBtn.classList.remove('primary');
-    svg.classList.remove('edge-creating');
-    svg.style.cursor = 'default';
+    elements.addEdgeBtn.textContent = '+ Линия';
+    elements.addEdgeBtn.classList.remove('primary');
+    elements.svg.classList.remove('edge-creating');
+    elements.svg.style.cursor = 'default';
     
     if (tempEdgeElement) {
       tempEdgeElement.remove();
@@ -1126,13 +1254,13 @@
   // Показать панель создания узла
 function showNodeCreationPanel(clientX, clientY, worldPos) {
   console.log('showNodeCreationPanel вызван:', { clientX, clientY, worldPos });
-  console.log('nodeCreationPanel элемент:', nodeCreationPanel);
+  console.log('nodeCreationPanel элемент:', elements.nodeCreationPanel);
   
   // Проверяем, что панель существует в DOM
-  const panelInDOM = document.getElementById('nodeCreationPanel');
+  const panelInDOM = elements.nodeCreationPanel;
   console.log('Панель в DOM:', panelInDOM);
   
-  if (!nodeCreationPanel) {
+  if (!elements.nodeCreationPanel) {
     console.error('nodeCreationPanel не найден!');
     return;
   }
@@ -1143,22 +1271,22 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
   }
   
       // Показываем панель
-    nodeCreationPanel.style.display = 'block';
-    nodeCreationPanel.style.left = `${clientX + CONSTANTS.UI.PANEL_OFFSET}px`;
-    nodeCreationPanel.style.top = `${clientY + CONSTANTS.UI.PANEL_OFFSET}px`;
+    elements.nodeCreationPanel.style.display = 'block';
+    elements.nodeCreationPanel.style.left = `${clientX + CONSTANTS.UI.PANEL_OFFSET}px`;
+    elements.nodeCreationPanel.style.top = `${clientY + CONSTANTS.UI.PANEL_OFFSET}px`;
     
     // Сохраняем позицию для создания узла
-    nodeCreationPanel.dataset.worldX = worldPos.x;
-    nodeCreationPanel.dataset.worldY = worldPos.y;
+    elements.nodeCreationPanel.dataset.worldX = worldPos.x;
+    elements.nodeCreationPanel.dataset.worldY = worldPos.y;
     
     console.log('Панель показана, стили:', {
-      display: nodeCreationPanel.style.display,
-      left: nodeCreationPanel.style.left,
-      top: nodeCreationPanel.style.top
+      display: elements.nodeCreationPanel.style.display,
+      left: elements.nodeCreationPanel.style.left,
+      top: elements.nodeCreationPanel.style.top
     });
     
     // Проверяем, что панель действительно видна
-    const computedStyle = window.getComputedStyle(nodeCreationPanel);
+    const computedStyle = window.getComputedStyle(elements.nodeCreationPanel);
     console.log('Вычисленные стили панели:', {
       display: computedStyle.display,
       left: computedStyle.left,
@@ -1169,7 +1297,7 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
     });
   
       // Фокус на первое поле
-    const firstInput = document.getElementById('newNodeId');
+    const firstInput = elements.newNodeId;
     if (firstInput) {
       firstInput.focus();
       console.log('Фокус установлен на поле ID');
@@ -1187,21 +1315,21 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
   
   // Скрыть панель создания узла
   function hideNodeCreationPanel() {
-    nodeCreationPanel.style.display = 'none';
+    elements.nodeCreationPanel.style.display = 'none';
   }
   
   // Создать новый узел
   function createNewNode() {
     try {
-      const id = document.getElementById('newNodeId').value.trim();
-      const name = document.getElementById('newNodeName').value.trim();
-      const roadType = document.getElementById('newNodeType').value;
-      const cornerTag = document.getElementById('newNodeCornerTag').value.trim();
-      const km = document.getElementById('newNodeKm').value.trim();
+      const id = elements.newNodeId.value.trim();
+      const name = elements.newNodeName.value.trim();
+      const roadType = elements.newNodeType.value;
+      const cornerTag = elements.newNodeCornerTag.value.trim();
+      const km = elements.newNodeKm.value.trim();
 
       // Получаем координаты из панели создания узла
-      const worldX = parseFloat(nodeCreationPanel.dataset.worldX) || 0;
-      const worldY = parseFloat(nodeCreationPanel.dataset.worldY) || 0;
+      const worldX = parseFloat(elements.nodeCreationPanel.dataset.worldX) || 0;
+      const worldY = parseFloat(elements.nodeCreationPanel.dataset.worldY) || 0;
 
       // Валидация данных
       const validationErrors = validateNodeData(id, name, worldX, worldY);
@@ -1257,23 +1385,22 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       showSuccessMessage(`Узел "${id}" успешно создан`);
       
     } catch (error) {
-      console.error('Ошибка при создании узла:', error);
-      showErrorMessage(`Ошибка при создании узла: ${error.message}`);
+      handleError(error, 'создание узла', { id, name, worldX, worldY });
     }
   }
   
   // Очистить форму создания узла
   function clearNodeCreationForm() {
-    document.getElementById('newNodeId').value = '';
-    document.getElementById('newNodeName').value = '';
-    document.getElementById('newNodeType').value = 'road-ckad';
-    document.getElementById('newNodeCornerTag').value = '';
-    document.getElementById('newNodeKm').value = '';
+    elements.newNodeId.value = '';
+    elements.newNodeName.value = '';
+    elements.newNodeType.value = 'road-ckad';
+    elements.newNodeCornerTag.value = '';
+    elements.newNodeKm.value = '';
     
     // Очищаем координаты
-    if (nodeCreationPanel) {
-      delete nodeCreationPanel.dataset.worldX;
-      delete nodeCreationPanel.dataset.worldY;
+    if (elements.nodeCreationPanel) {
+      delete elements.nodeCreationPanel.dataset.worldX;
+      delete elements.nodeCreationPanel.dataset.worldY;
     }
   }
   
@@ -1367,18 +1494,19 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       showSuccessMessage(`Узел "${deletedNodeId}" успешно удален вместе с ${edgesToRemove.length} связями`);
 
     } catch (error) {
-      console.error('Ошибка при удалении:', error);
-      showErrorMessage(`Ошибка при удалении: ${error.message}`);
+      const context = selectedEdgeKey ? 'удаление связи' : 'удаление узла';
+      const additionalData = selectedEdgeKey ? { edgeKey: selectedEdgeKey } : { nodeId: selectedNodeId };
+      handleError(error, context, additionalData);
     }
   }
 
   // Заполнение datalist
   function updateSystemsDatalist() {
-    systemsDatalist.innerHTML = '';
+    elements.systemsDatalist.innerHTML = '';
     systems.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id;
-      systemsDatalist.appendChild(opt);
+      elements.systemsDatalist.appendChild(opt);
     });
   }
   
@@ -1426,13 +1554,13 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
   function performRender() {
     console.log('🎨 performRender: начало рендера');
     console.log('🎨 systems.length =', systems.length);
-    console.log('🎨 nodesLayer =', nodesLayer);
-    console.log('🎨 labelsLayer =', labelsLayer);
+    console.log('🎨 nodesLayer =', elements.nodesLayer);
+    console.log('🎨 labelsLayer =', elements.labelsLayer);
     
     // Очистка слоев
-    edgesLayer.innerHTML = '';
-    nodesLayer.innerHTML = '';
-    labelsLayer.innerHTML = '';
+    elements.edgesLayer.innerHTML = '';
+    elements.nodesLayer.innerHTML = '';
+    elements.labelsLayer.innerHTML = '';
     idToNodeGroup.clear();
     idToLabel.clear();
     
@@ -1490,21 +1618,21 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       });
       
       line.dataset.key = `${a}__${b}`;
-      edgesLayer.appendChild(line);
+      elements.edgesLayer.appendChild(line);
     }
   }
   
   // Обновление визуального выделения рёбер
   function updateEdgeSelection() {
     // Убираем выделение со всех рёбер
-    const allEdges = edgesLayer.querySelectorAll('.edge');
+    const allEdges = elements.edgesLayer.querySelectorAll('.edge');
     allEdges.forEach(edge => {
       edge.classList.remove('selected');
     });
     
     // Выделяем выбранное рёбро
     if (selectedEdgeKey) {
-      const selectedEdge = edgesLayer.querySelector(`[data-key="${selectedEdgeKey}"]`);
+      const selectedEdge = elements.edgesLayer.querySelector(`[data-key="${selectedEdgeKey}"]`);
       if (selectedEdge) {
         selectedEdge.classList.add('selected');
       }
@@ -1519,8 +1647,8 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       const label = createNodeLabel(s);
       
       // Добавляем в слои
-      nodesLayer.appendChild(group);
-      labelsLayer.appendChild(label);
+      elements.nodesLayer.appendChild(group);
+      elements.labelsLayer.appendChild(label);
       
       // Сохраняем ссылки и подключаем обработчики
       idToNodeGroup.set(s.id, group);
@@ -1533,7 +1661,7 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       attachDragHandlers(group, s);
       attachHoverHandlers(group, s.id);
     }
-    console.log('renderNodesAndLabels: рендер завершен, всего узлов в DOM:', nodesLayer.children.length);
+    console.log('renderNodesAndLabels: рендер завершен, всего узлов в DOM:', elements.nodesLayer.children.length);
   
   // Проверяем CSS свойства узлов после создания
   console.log('🔍 ПРОВЕРКА CSS СВОЙСТВ УЗЛОВ ПОСЛЕ СОЗДАНИЯ:');
@@ -1691,33 +1819,7 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
   console.log('✅ Pointer events отключены для фона карты');
   
 
-  // Панорамирование мышью
-  let isPanning = false;
-  let panStart = { x: 0, y: 0 };
-  svg.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-    isPanning = true;
-    panStart = { x: e.clientX - translate.x, y: e.clientY - translate.y };
-    svg.style.cursor = 'grabbing';
-  });
-  window.addEventListener('mousemove', (e) => {
-    if (!isPanning) return;
-    translate.x = e.clientX - panStart.x;
-    translate.y = e.clientY - panStart.y;
-    applyTransform();
-  });
-  window.addEventListener('mouseup', () => {
-    isPanning = false;
-    svg.style.cursor = 'default';
-  });
-
-  // Зум колесом
-  svg.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const { clientX, clientY, deltaY } = e;
-    const zoomFactor = Math.pow(1.0015, -deltaY);
-    zoomAtPoint(clientX, clientY, zoomFactor);
-  }, { passive: false });
+  // Панорамирование и зум будут инициализированы в DOMContentLoaded
 
   function zoomAtPoint(clientX, clientY, factor) {
     const ptBefore = screenToWorld(clientX, clientY);
@@ -1731,9 +1833,9 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
   // Обработчики кнопок зума убраны - зум работает колесом мыши
 
   function screenToWorld(clientX, clientY) {
-    const pt = svg.createSVGPoint();
+    const pt = elements.svg.createSVGPoint();
     pt.x = clientX; pt.y = clientY;
-    const ctm = svg.getScreenCTM();
+    const ctm = elements.svg.getScreenCTM();
     const inv = ctm.inverse();
     const p = pt.matrixTransform(inv);
     // учтём текущую трансформацию viewport
@@ -2421,8 +2523,7 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       showSuccessMessage('Карта успешно экспортирована');
       
     } catch (error) {
-      console.error('Ошибка при экспорте карты:', error);
-      showErrorMessage(`Ошибка при экспорте карты: ${error.message}`);
+      handleError(error, 'экспорт карты');
     }
   }
   
@@ -2489,8 +2590,7 @@ function showNodeCreationPanel(clientX, clientY, worldPos) {
       reader.readAsText(file);
       
     } catch (error) {
-      console.error('Ошибка при импорте карты:', error);
-      showErrorMessage(`Ошибка при импорте карты: ${error.message}`);
+      handleError(error, 'импорт карты', { fileName: file.name, fileSize: file.size });
     }
   }
   
