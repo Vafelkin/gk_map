@@ -179,6 +179,11 @@ import {
   initWindowHandlers
 } from './modules/events.js';
 
+import { 
+  initUI as initUIModule,
+  loadSavedData as loadSavedDataModule
+} from './modules/ui.js';
+
 /**
  * Основная инициализация приложения
  */
@@ -198,10 +203,10 @@ function init() {
   rebuildDataStructures();
   
   // Инициализация UI
-  initUI();
+  initUIModule();
   
   // Инициализация обработчиков событий
-  initEventHandlers();
+  initEventHandlersModule();
   
   // Инициализация режимов редактирования
   initEditModes();
@@ -210,7 +215,7 @@ function init() {
   initUIHandlers();
   
   // Загрузка сохраненных данных
-  loadSavedData();
+  loadSavedDataModule();
   
   // Первоначальный рендеринг
   render();
@@ -223,179 +228,6 @@ function init() {
   console.log('Приложение инициализировано');
 }
 
-/**
- * Инициализация UI элементов
- */
-function initUI() {
-  // Кэширование DOM элементов
-  window.svg = document.getElementById('map');
-  window.viewport = document.getElementById('viewport');
-  window.edgesLayer = document.getElementById('edgesLayer');
-  window.nodesLayer = document.getElementById('nodesLayer');
-  window.labelsLayer = document.getElementById('labelsLayer');
-  
-  // Обновление datalist для поиска
-  updateSystemsDatalist();
-  
-  console.log('UI элементы инициализированы');
-}
-
-/**
- * Инициализация обработчиков событий
- */
-function initEventHandlers() {
-  // Обработчики мыши
-  const svg = document.getElementById('map');
-  if (svg) {
-    svg.addEventListener('mousedown', handleMapMouseDown);
-    svg.addEventListener('mousemove', handleMapMouseMove);
-    svg.addEventListener('mouseup', handleMapMouseUp);
-    svg.addEventListener('wheel', handleMapWheel);
-    svg.addEventListener('click', handleMapClick);
-  }
-  
-  // Обработчики кнопок
-  const zoomInBtn = document.getElementById('zoomInBtn');
-  const zoomOutBtn = document.getElementById('zoomOutBtn');
-  const resetViewBtn = document.getElementById('resetViewBtn');
-  
-  if (zoomInBtn) zoomInBtn.addEventListener('click', () => zoomAtPoint(window.innerWidth / 2, window.innerHeight / 2, 1.2));
-  if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => zoomAtPoint(window.innerWidth / 2, window.innerHeight / 2, 0.8));
-  if (resetViewBtn) resetViewBtn.addEventListener('click', resetViewport);
-  
-  console.log('Обработчики событий инициализированы');
-}
-
-/**
- * Обработчик нажатия мыши на карту
- */
-function handleMapMouseDown(e) {
-  if (editMode) return;
-  
-  isDragging = true;
-  lastMousePos = { x: e.clientX, y: e.clientY };
-  e.preventDefault();
-}
-
-/**
- * Обработчик движения мыши по карте
- */
-function handleMapMouseMove(e) {
-  if (!isDragging) return;
-  
-  const deltaX = e.clientX - lastMousePos.x;
-  const deltaY = e.clientY - lastMousePos.y;
-  
-  translate.x += deltaX;
-  translate.y += deltaY;
-  
-  lastMousePos = { x: e.clientX, y: e.clientY };
-  applyTransform();
-}
-
-/**
- * Обработчик отпускания мыши
- */
-function handleMapMouseUp(e) {
-  isDragging = false;
-}
-
-/**
- * Обработчик колеса мыши для зума
- */
-function handleMapWheel(e) {
-  e.preventDefault();
-  
-  const factor = e.deltaY > 0 ? 0.9 : 1.1;
-  zoomAtPoint(e.clientX, e.clientY, factor);
-}
-
-/**
- * Обработчик клика по карте
- */
-function handleMapClick(e) {
-  // Обработка клика для создания узлов и связей
-  if (editMode) {
-    handleEditModeClick(e);
-  }
-}
-
-/**
- * Обработка клика в режиме редактирования
- */
-function handleEditModeClick(e) {
-  const worldPos = screenToWorld(e.clientX, e.clientY);
-  
-  if (nodeCreationMode) {
-    showNodeCreationPanel(e.clientX, e.clientY, worldPos);
-  } else if (edgeCreationMode) {
-    // Логика создания связи
-  }
-}
-
-/**
- * Обновление datalist для поиска систем
- */
-function updateSystemsDatalist() {
-  const datalist = document.getElementById('systemsDatalist');
-  if (!datalist) return;
-  
-  datalist.innerHTML = '';
-  systems.forEach(system => {
-    const option = document.createElement('option');
-    option.value = system.id;
-    option.textContent = `${system.id}${system.name ? ` - ${system.name}` : ''}`;
-    datalist.appendChild(option);
-  });
-}
-
-/**
- * Загрузка сохраненных данных
- */
-function loadSavedData() {
-  try {
-    const savedData = localStorage.getItem(STORAGE_KEYS.FULL_MAP);
-    if (savedData) {
-      const mapData = JSON.parse(savedData);
-      
-      // Восстановление данных
-      systems.length = 0;
-      jumps.length = 0;
-      systems.push(...mapData.systems);
-      jumps.push(...mapData.jumps);
-      
-      // Восстановление динамических тегов
-      Object.assign(dynamicCornerTags, mapData.dynamicCornerTags || {});
-      Object.assign(dynamicKmTags, mapData.dynamicKmTags || {});
-      
-      // Обновление структур для поиска
-      rebuildDataStructures();
-      
-      console.log('Сохраненные данные загружены');
-    }
-  } catch (error) {
-    console.error('Ошибка при загрузке сохраненных данных:', error);
-  }
-}
-
-/**
- * Показ панели создания узла
- */
-function showNodeCreationPanel(clientX, clientY, worldPos) {
-  const panel = document.getElementById('nodeCreationPanel');
-  if (!panel) return;
-  
-  // Позиционирование панели
-  panel.style.left = `${clientX}px`;
-  panel.style.top = `${clientY}px`;
-  panel.style.display = 'block';
-  
-  // Заполнение координат
-  const xInput = document.getElementById('nodeX');
-  const yInput = document.getElementById('nodeY');
-  if (xInput) xInput.value = Math.round(worldPos.x);
-  if (yInput) yInput.value = Math.round(worldPos.y);
-}
 
 /**
  * Глобальные функции для доступа из HTML

@@ -3,8 +3,15 @@
  * Содержит функции для работы с пользовательским интерфейсом
  */
 
-import { systems } from './data-structures.js';
+import { 
+  systems, 
+  jumps, 
+  dynamicCornerTags, 
+  dynamicKmTags,
+  rebuildDataStructures 
+} from './data-structures.js';
 import { formatFileSize } from './utils.js';
+import { STORAGE_KEYS } from './config.js';
 
 /**
  * Показ сообщения пользователю
@@ -247,6 +254,52 @@ function getStorageInfo() {
     positionsSize,
     fullMapSize
   };
+}
+
+/**
+ * Инициализация UI элементов
+ */
+export function initUI() {
+  // Кэширование DOM элементов
+  window.svg = document.getElementById('map');
+  window.viewport = document.getElementById('viewport');
+  window.edgesLayer = document.getElementById('edgesLayer');
+  window.nodesLayer = document.getElementById('nodesLayer');
+  window.labelsLayer = document.getElementById('labelsLayer');
+  
+  // Обновление datalist для поиска
+  updateSystemsDatalist();
+  
+  console.log('UI элементы инициализированы');
+}
+
+/**
+ * Загрузка сохраненных данных
+ */
+export function loadSavedData() {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEYS.FULL_MAP);
+    if (savedData) {
+      const mapData = JSON.parse(savedData);
+      
+      // Восстановление данных
+      systems.length = 0;
+      jumps.length = 0;
+      systems.push(...mapData.systems);
+      jumps.push(...mapData.jumps);
+      
+      // Восстановление динамических тегов
+      Object.assign(dynamicCornerTags, mapData.dynamicCornerTags || {});
+      Object.assign(dynamicKmTags, mapData.dynamicKmTags || {});
+      
+      // Обновление структур для поиска
+      rebuildDataStructures();
+      
+      console.log('Сохраненные данные загружены');
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке сохраненных данных:', error);
+  }
 }
 
 /**
