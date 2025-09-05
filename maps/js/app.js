@@ -134,10 +134,7 @@ import {
   handleMapClick as handleEditMapClick,
   handleNodeClickForEdge,
   updateTempEdge,
-  showNodeCreationPanel,
-  hideNodeCreationPanel,
   createNewNode,
-  clearNodeCreationForm,
   deleteSelectedNode,
   updateNodePosition,
   undo,
@@ -164,9 +161,9 @@ import {
   showWarningMessage, 
   showInfoMessage,
   updateSystemsDatalist,
-  showNodeCreationPanel as showUINodeCreationPanel,
-  hideNodeCreationPanel as hideUINodeCreationPanel,
-  clearNodeCreationForm as clearUINodeCreationForm,
+  showNodeCreationPanel,
+  hideNodeCreationPanel,
+  clearNodeCreationForm,
   showMapStatistics,
   initUIHandlers
 } from './modules/ui.js';
@@ -193,15 +190,6 @@ function init() {
   // Инициализация структур данных
   initDataStructures();
   
-  // Создание всех дорог
-  createAllRoads();
-  
-  // Создание дополнительных связей
-  createAdditionalConnections();
-  
-  // Обновление структур для быстрого поиска
-  rebuildDataStructures();
-  
   // Инициализация UI
   initUIModule();
   
@@ -215,7 +203,15 @@ function init() {
   initUIHandlers();
   
   // Загрузка сохраненных данных
-  loadSavedDataModule();
+  const dataLoaded = loadSavedDataModule();
+  
+  // Если данные не загружены, создаем стандартные дороги
+  if (!dataLoaded) {
+    console.log('Сохраненные данные не найдены, создаем стандартные дороги');
+    createAllRoads();
+    createAdditionalConnections();
+    rebuildDataStructures();
+  }
   
   // Первоначальный рендеринг
   render();

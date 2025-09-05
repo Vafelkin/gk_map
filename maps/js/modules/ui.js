@@ -296,10 +296,12 @@ export function loadSavedData() {
       rebuildDataStructures();
       
       console.log('Сохраненные данные загружены');
+      return true;
     }
   } catch (error) {
     console.error('Ошибка при загрузке сохраненных данных:', error);
   }
+  return false;
 }
 
 /**

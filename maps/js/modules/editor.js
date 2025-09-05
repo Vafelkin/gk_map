@@ -18,6 +18,7 @@ import {
   MAX_HISTORY
 } from './data-structures.js';
 import { validateNodeData, validateEdgeData, snapToGrid, generateUniqueId } from './utils.js';
+import { showNodeCreationPanel, hideNodeCreationPanel, clearNodeCreationForm } from './ui.js';
 import { addSystem, removeSystem, addJump, removeJump } from './data-structures.js';
 import { render } from './renderer.js';
 
@@ -300,45 +301,6 @@ function createEdge(fromId, toId) {
   showSuccessMessage(`Связь создана: ${fromId} → ${toId}`);
 }
 
-/**
- * Показ панели создания узла
- * @param {number} clientX - Координата X клика
- * @param {number} clientY - Координата Y клика
- * @param {Object} worldPos - Мировые координаты
- */
-export function showNodeCreationPanel(clientX, clientY, worldPos) {
-  const panel = document.getElementById('nodeCreationPanel');
-  if (!panel) return;
-  
-  // Позиционирование панели
-  panel.style.left = `${clientX}px`;
-  panel.style.top = `${clientY}px`;
-  panel.style.display = 'block';
-  
-  // Заполнение координат
-  const xInput = document.getElementById('nodeX');
-  const yInput = document.getElementById('nodeY');
-  if (xInput) xInput.value = Math.round(worldPos.x);
-  if (yInput) yInput.value = Math.round(worldPos.y);
-  
-  // Фокус на поле ID
-  const idInput = document.getElementById('newNodeId');
-  if (idInput) {
-    idInput.focus();
-  }
-}
-
-/**
- * Скрытие панели создания узла
- */
-export function hideNodeCreationPanel() {
-  const panel = document.getElementById('nodeCreationPanel');
-  if (panel) {
-    panel.style.display = 'none';
-  }
-  
-  clearNodeCreationForm();
-}
 
 /**
  * Создание нового узла
@@ -392,20 +354,6 @@ export function createNewNode() {
   showSuccessMessage(`Узел создан: ${id}`);
 }
 
-/**
- * Очистка формы создания узла
- */
-export function clearNodeCreationForm() {
-  const idInput = document.getElementById('newNodeId');
-  const nameInput = document.getElementById('newNodeName');
-  const xInput = document.getElementById('nodeX');
-  const yInput = document.getElementById('nodeY');
-  
-  if (idInput) idInput.value = '';
-  if (nameInput) nameInput.value = '';
-  if (xInput) xInput.value = '';
-  if (yInput) yInput.value = '';
-}
 
 /**
  * Удаление выбранного узла
