@@ -57,11 +57,14 @@
             </filter>
           </defs>
           <g id="viewport">
+            <!-- Фоновые слои (задний план) -->
+            <rect id="bgMinor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternMinor)" />
+            <rect id="bgMajor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPattern)" />
+            
+            <!-- Интерактивные слои (передний план) -->
             <g id="edgesLayer"></g>
             <g id="nodesLayer"></g>
             <g id="labelsLayer"></g>
-            <rect id="bgMinor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternMinor)" />
-            <rect id="bgMajor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPattern)" />
           </g>
         </svg>
       </div>
