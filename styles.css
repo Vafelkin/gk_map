@@ -61,9 +61,10 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(51,102,255
 .chip.road-m11 { background: #cffafe; border: 1px solid #06b6d4; }
 
 /* Map styles */
-.edge { stroke: #98a6bc; stroke-opacity: 0.8; stroke-width: 1.5; }
+.edge { stroke: #98a6bc; stroke-opacity: 0.8; stroke-width: 1.5; cursor: pointer; }
 .edge.route { stroke: #ff6b6b; stroke-width: 2.5; stroke-opacity: 1; }
 .edge.free { stroke: #ef4444; stroke-opacity: 0.95; stroke-dasharray: 6 4; stroke-linecap: round; }
+.edge.selected { stroke: #3b82f6; stroke-width: 3; stroke-opacity: 1; }
 .node rect { stroke: #334155; stroke-width: 1; filter: url(#shadow); rx: 4; ry: 4; }
 .node circle { stroke: #334155; stroke-width: 1; filter: url(#shadow); }
 .node.road-ckad rect, .node.road-ckad circle { fill: #dbeafe; }
@@ -186,7 +187,6 @@ textarea#htmlInput { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, C
 
 /* Создание линии */
 .edge-creating { cursor: crosshair; }
-.edge-creating .node { pointer-events: none; }
 .edge-creating .edge { pointer-events: none; }
 
 /* Временная линия при создании */

@@ -5,15 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Карта-схема объектов СВП (Прототип)</title>
     <link rel="stylesheet" href="./styles.css" />
-    <script type="module" src="./js/app.js"></script>
-    <script>
-      // Инициализация приложения после загрузки DOM
-      document.addEventListener('DOMContentLoaded', () => {
-        if (window.initApp) {
-          window.initApp();
-        }
-      });
-    </script>
   </head>
   <body>
     <header class="app-header">
@@ -45,20 +36,9 @@
         <div class="control-group export-group">
           <button id="exportBtn" class="btn">📤 Экспорт</button>
           <button id="importBtn" class="btn">📥 Импорт</button>
-          <button id="statsBtn" class="btn">📊 Статистика</button>
-          <button id="undoBtn" class="btn">↶ Отмена</button>
-          <button id="redoBtn" class="btn">↷ Повтор</button>
-          <button id="selectAllBtn" class="btn">☑ Все</button>
-          <button id="deselectAllBtn" class="btn">☐ Снять выбор</button>
-          <button id="deleteSelectedBtn" class="btn">🗑 Удалить выбранные</button>
-          <button id="saveMapBtn" class="btn">💾 Сохранить</button>
         </div>
         
-        <div class="control-group zoom-group">
-          <button id="zoomInBtn" class="btn">+</button>
-          <button id="zoomOutBtn" class="btn">−</button>
-          <button id="resetViewBtn" class="btn">Сброс</button>
-        </div>
+        <!-- Кнопки зума убраны - зум работает колесом мыши -->
       </nav>
     </header>
 
@@ -77,11 +57,11 @@
             </filter>
           </defs>
           <g id="viewport">
-            <rect id="bgMinor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternMinor)" />
-            <rect id="bgMajor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPattern)" />
             <g id="edgesLayer"></g>
             <g id="nodesLayer"></g>
             <g id="labelsLayer"></g>
+            <rect id="bgMinor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternMinor)" />
+            <rect id="bgMajor" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPattern)" />
           </g>
         </svg>
       </div>
