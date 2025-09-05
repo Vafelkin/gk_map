@@ -5,7 +5,7 @@
 
 import { editMode, isDragging, lastMousePos } from './data-structures.js';
 import { zoomAtPoint, screenToWorld } from './viewport.js';
-import { handleMapClick, handleNodeClickForEdge } from './editor.js';
+import { handleNodeClickForEdge } from './editor.js';
 
 /**
  * Инициализация всех обработчиков событий
@@ -95,7 +95,7 @@ function handleWheel(e) {
  */
 function handleClick(e) {
   if (editMode) {
-    handleMapClick(e);
+    handleEditMapClick(e);
   }
 }
 
@@ -486,7 +486,7 @@ function handleBeforeUnload(e) {
 // Импорт необходимых функций
 import { translate, applyTransform, focusSystem, resetViewport, fitViewToContent } from './viewport.js';
 import { selectedNodes, selectedNodeId } from './data-structures.js';
-import { handleMapClick } from './editor.js';
+import { handleMapClick as handleEditMapClick } from './editor.js';
 import { showNodeCreationPanel } from './ui.js';
 import { autoSaveMap, exportMap } from './storage.js';
 import { undo, redo, selectAllNodes, deleteSelectedNodes, exitEditMode } from './editor.js';
